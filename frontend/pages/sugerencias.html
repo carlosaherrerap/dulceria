@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sugerencias - Pastelería Renzos</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Renzos 🍰</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">🏠 Dashboard</a></li>
+                <li><a href="productos.html">📦 Productos</a></li>
+                <li><a href="reservas.html">🗓️ Reservas</a></li>
+                <li><a href="clientes.html">👥 Clientes</a></li>
+                <li><a href="preguntas.html">❓ FAQ/Reclamos</a></li>
+                <li><a href="sugerencias.html" class="active">💡 Sugerencias</a></li>
+                <li><a href="anuncios.html">📢 Anuncios</a></li>
+                <li class="logout-item"><a href="#" id="logoutBtn">🚪 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <header class="content-header">
+                <h1>Sugerencias por Ocasión</h1>
+                <button class="btn-primary" id="openModalBtn">+ Nueva Sugerencia</button>
+            </header>
+
+            <div class="table-container">
+                <table id="sugerenciasTable">
+                    <thead>
+                        <tr>
+                            <th>Ocasión</th>
+                            <th>Palabras Clave</th>
+                            <th>Sugerencia Bot</th>
+                            <th>Precio Est.</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nueva Sugerencia -->
+    <div class="modal-overlay" id="sugerenciaModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Añadir Sugerencia por Evento</h2>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="sugerenciaForm">
+                <div class="input-group">
+                    <label>Ocasión / Evento</label>
+                    <input type="text" id="ocasion" placeholder="ej: Cumpleaños, Aniversario" required>
+                </div>
+                <div class="input-group">
+                    <label>Palabras Clave (Comas)</label>
+                    <input type="text" id="palabras_clave" placeholder="cumple, fiesta, celebrar">
+                </div>
+                <div class="input-group">
+                    <label>Descripción de la Sugerencia</label>
+                    <textarea id="descripcion" rows="3" placeholder="Ej: Combo cumpleañero con torta y bocaditos..."
+                        required></textarea>
+                </div>
+                <div class="input-group">
+                    <label>Precio Estimado (S/)</label>
+                    <input type="number" step="0.01" id="precio_estimado" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Sugerencia</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '../index.html';
+
+        const modal = document.getElementById('sugerenciaModal');
+        const openBtn = document.getElementById('openModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const sugerenciaForm = document.getElementById('sugerenciaForm');
+
+        openBtn.onclick = () => modal.style.display = 'flex';
+        closeBtn.onclick = () => modal.style.display = 'none';
+        cancelBtn.onclick = () => modal.style.display = 'none';
+
+        async function loadSugerencias() {
+            const response = await fetch('http://localhost:3000/api/sugerencias', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+
+            const tbody = document.querySelector('#sugerenciasTable tbody');
+            tbody.innerHTML = '';
+            data.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${s.ocasion}</td>
+                    <td><small>${s.palabras_clave || ''}</small></td>
+                    <td>${s.descripcion.substring(0, 50)}...</td>
+                    <td>S/ ${s.precio_estimado}</td>
+                    <td><button class="btn-delete" onclick="deleteSug('${s.id}')">🗑️</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        sugerenciaForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                ocasion: document.getElementById('ocasion').value,
+                palabras_clave: document.getElementById('palabras_clave').value,
+                descripcion: document.getElementById('descripcion').value,
+                precio_estimado: parseFloat(document.getElementById('precio_estimado').value),
+                presentaciones_ids: [], // Opcional por ahora
+                activo: true
+            };
+
+            const res = await fetch('http://localhost:3000/api/sugerencias', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                modal.style.display = 'none';
+                sugerenciaForm.reset();
+                loadSugerencias();
+            } else {
+                alert('Error al guardar la sugerencia');
+            }
+        };
+
+        async function deleteSug(id) {
+            if (!confirm('¿Estás seguro?')) return;
+            const res = await fetch(`http://localhost:3000/api/sugerencias/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) loadSugerencias();
+        }
+
+        document.addEventListener('DOMContentLoaded', loadSugerencias);
+    </script>
+</body>
+
+</html>

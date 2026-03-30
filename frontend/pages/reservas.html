@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas - Pastelería Renzos</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Renzos 🍰</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">🏠 Dashboard</a></li>
+                <li><a href="productos.html">📦 Productos</a></li>
+                <li><a href="reservas.html" class="active">🗓️ Reservas</a></li>
+                <li><a href="clientes.html">👥 Clientes</a></li>
+                <li><a href="preguntas.html">❓ FAQ/Reclamos</a></li>
+                <li><a href="sugerencias.html">💡 Sugerencias</a></li>
+                <li><a href="anuncios.html">📢 Anuncios</a></li>
+                <li class="logout-item"><a href="#" id="logoutBtn">🚪 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <header class="content-header">
+                <h1>Gestión de Reservas</h1>
+            </header>
+
+            <div class="table-container">
+                <table id="reservasTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Total</th>
+                            <th>Fecha Recojo</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            if (!token) window.location.href = '../index.html';
+
+            const response = await fetch('http://localhost:3000/api/reservas', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const reservas = await response.json();
+
+            const tbody = document.querySelector('#reservasTable tbody');
+            reservas.forEach(r => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${r.id}</td>
+                    <td>${r.usuario_nombre} <br><small>${r.usuario_telefono}</small></td>
+                    <td>S/ ${r.total}</td>
+                    <td>${r.fecha_retiro || 'Pendiente'}</td>
+                    <td><span class="status-${r.estado}">${r.estado}</span></td>
+                    <td>
+                        <select onchange="cambiarEstado('${r.id}', this.value)">
+                            <option value="PENDIENTE" ${r.estado === 'PENDIENTE' ? 'selected' : ''}>Pendiente</option>
+                            <option value="EJECUTANDO" ${r.estado === 'EJECUTANDO' ? 'selected' : ''}>Ejecutando</option>
+                            <option value="TERMINADO" ${r.estado === 'TERMINADO' ? 'selected' : ''}>Terminado</option>
+                            <option value="ENTREGADO" ${r.estado === 'ENTREGADO' ? 'selected' : ''}>Entregado</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+
+        async function cambiarEstado(id, nuevoEstado) {
+            const token = localStorage.getItem('token');
+            await fetch(`http://localhost:3000/api/reservas/${id}/estado`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ estado: nuevoEstado })
+            });
+            location.reload();
+        }
+    </script>
+</body>
+
+</html>
