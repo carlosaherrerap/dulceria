@@ -1,0 +1,27 @@
+TABLA:  PRODUCTOS								
+ID	nombre	descripcion	categoria_id	activo	created_at			
+prod-1	keke de chocolate	delicioso keke de chocolate relleno de manjar	cat-1	true	16/02/2026			
+prod-2	alfajor	alfajor de maicena	cat-2	true	17/02/2026			
+prod-3	tartaleta	Tartaleta casera	cat-3	true	18/02/2026			
+								
+								
+TABLA: CATEGORIAS								
+ID	nombre	descripcion						
+cat-1	keke	hecho en horno electrico						
+cat-2	bocadito	hecho en horno electrico						
+cat-3	torta	hecho en horno electrico						
+								
+								
+TABLA: PRESENTACIONES								
+ID	producto_id	tipo_venta	cantidad	unidad	precio	codigo	stock	activo
+pres-1	prod-1	peso	0.5	kg	20	--	indefinido	true
+pres-2	prod-2	cantidad	1	centena	30	--	350	true
+pres-3	prod-3	peso	750	g	18.5	--	10	false
+								
+								
+TABLA: PROPIEDADES_PRODUCTOS								
+ID	producto_id	propiedad	valor					
+prop-1	prod-1	sabor	chocolate					
+prop-2	prod-1	relleno	manjar					
+prop-3	prod-2	base	maicena					
+prop-4	prod-2	relleno	manjar blanco					
