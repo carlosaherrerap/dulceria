@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Pastelería Renzos</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Renzos 🍰</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html" class="active">🏠 Dashboard</a></li>
+                <li><a href="productos.html">📦 Productos</a></li>
+                <li><a href="reservas.html">🗓️ Reservas</a></li>
+                <li><a href="clientes.html">👥 Clientes</a></li>
+                <li><a href="preguntas.html">❓ FAQ/Reclamos</a></li>
+                <li><a href="sugerencias.html">💡 Sugerencias</a></li>
+                <li><a href="anuncios.html">📢 Anuncios</a></li>
+                <li class="logout-item"><a href="#" id="logoutBtn">🚪 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <header class="content-header">
+                <h1>Panel de Control</h1>
+                <div class="user-info">
+                    <span id="userName">Cargando...</span>
+                </div>
+            </header>
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <h3>Reservas Hoy</h3>
+                    <p class="stat-value" id="todayReservations">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Productos Activos</h3>
+                    <p class="stat-value" id="activeProducts">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Nuevos Clientes</h3>
+                    <p class="stat-value" id="newClients">0</p>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script>
+        // Lógica específica del dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user) window.location.href = '../index.html';
+            document.getElementById('userName').textContent = `${user.nombre} (${user.role})`;
+
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.clear();
+                window.location.href = '../index.html';
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productos - Pastelería Renzos</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Renzos 🍰</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">🏠 Dashboard</a></li>
+                <li><a href="productos.html" class="active">📦 Productos</a></li>
+                <li><a href="reservas.html">🗓️ Reservas</a></li>
+                <li><a href="clientes.html">👥 Clientes</a></li>
+                <li><a href="preguntas.html">❓ FAQ/Reclamos</a></li>
+                <li><a href="sugerencias.html">💡 Sugerencias</a></li>
+                <li><a href="anuncios.html">📢 Anuncios</a></li>
+                <li class="logout-item"><a href="#" id="logoutBtn">🚪 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <header class="content-header">
+                <h1>Gestión de Productos</h1>
+                <button class="btn-primary" id="openModalBtn">+ Nuevo Producto</button>
+            </header>
+
+            <div class="table-container">
+                <table id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nuevo Producto -->
+    <div class="modal-overlay" id="productModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Añadir Nuevo Producto</h2>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="productForm">
+                <div class="input-group">
+                    <label>ID Único (slug)</label>
+                    <input type="text" id="productId" placeholder="ej: torta-choco-esp" required>
+                </div>
+                <div class="input-group">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="nombre" placeholder="ej: Torta de Chocolate" required>
+                </div>
+                <div class="input-group">
+                    <label>Categoría</label>
+                    <select id="categoriaId" required>
+                        <option value="">Seleccione una categoría</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Descripción</label>
+                    <textarea id="descripcion" rows="3"></textarea>
+                </div>
+                <div class="input-group">
+                    <label>
+                        <input type="checkbox" id="activo" checked style="width: auto;"> Activo
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="../assets/app.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '../index.html';
+
+        const modal = document.getElementById('productModal');
+        const openBtn = document.getElementById('openModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const productForm = document.getElementById('productForm');
+
+        openBtn.onclick = () => modal.style.display = 'flex';
+        closeBtn.onclick = () => modal.style.display = 'none';
+        cancelBtn.onclick = () => modal.style.display = 'none';
+
+        async function loadData() {
+            // Cargar Categorías para el Select
+            const catRes = await fetch('http://localhost:3000/api/categorias', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const categorias = await catRes.json();
+            const select = document.getElementById('categoriaId');
+            select.innerHTML = '<option value="">Seleccione una categoría</option>';
+            categorias.forEach(c => {
+                select.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+            });
+
+            // Cargar Productos
+            const response = await fetch('http://localhost:3000/api/productos', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const productos = await response.json();
+
+            const tbody = document.querySelector('#productsTable tbody');
+            tbody.innerHTML = '';
+            productos.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${p.id}</td>
+                    <td>${p.nombre}</td>
+                    <td>${p.categoria_nombre || 'N/A'}</td>
+                    <td><span class="status-${p.activo ? 'active' : 'inactive'}">${p.activo ? 'Activo' : 'Inactivo'}</span></td>
+                    <td>
+                        <button class="btn-delete" onclick="deleteProduct('${p.id}')">🗑️</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        productForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                id: document.getElementById('productId').value,
+                nombre: document.getElementById('nombre').value,
+                categoria_id: document.getElementById('categoriaId').value,
+                descripcion: document.getElementById('descripcion').value,
+                activo: document.getElementById('activo').checked
+            };
+
+            const res = await fetch('http://localhost:3000/api/productos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                modal.style.display = 'none';
+                productForm.reset();
+                loadData();
+            } else {
+                alert('Error al guardar el producto');
+            }
+        };
+
+        async function deleteProduct(id) {
+            if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+            const res = await fetch(`http://localhost:3000/api/productos/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) loadData();
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+
+</html>

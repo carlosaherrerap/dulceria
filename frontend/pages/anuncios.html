@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anuncios - Pastelería Renzos</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Renzos 🍰</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">🏠 Dashboard</a></li>
+                <li><a href="productos.html">📦 Productos</a></li>
+                <li><a href="reservas.html">🗓️ Reservas</a></li>
+                <li><a href="clientes.html">👥 Clientes</a></li>
+                <li><a href="preguntas.html">❓ FAQ/Reclamos</a></li>
+                <li><a href="sugerencias.html">💡 Sugerencias</a></li>
+                <li><a href="anuncios.html" class="active">📢 Anuncios</a></li>
+                <li class="logout-item"><a href="#" id="logoutBtn">🚪 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <header class="content-header">
+                <h1>Enviar Anuncio Masivo</h1>
+            </header>
+
+            <div class="form-card">
+                <form id="anuncioForm">
+                    <div class="input-group">
+                        <label>Mensaje del Anuncio</label>
+                        <textarea id="mensajeAnuncio" rows="5"
+                            placeholder="Ej: ¡Hoy descuento del 10% en todas las tortas!" required></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label>Seleccionar Destinatarios</label>
+                        <div id="contactosList"
+                            style="max-height: 200px; overflow-y: auto; background: #2c2c2c; padding: 1rem; border-radius: 6px;">
+                            <!-- Cargado vía JS -->
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary" id="sendBtn">🚀 Enviar a WhatsApp</button>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:3000/api/clientes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const clientes = await response.json();
+
+            const container = document.getElementById('contactosList');
+            clientes.forEach(c => {
+                const div = document.createElement('div');
+                div.style.marginBottom = '0.5rem';
+                div.innerHTML = `
+                    <input type="checkbox" name="cliente" value="${c.id}" style="width: auto;"> 
+                    <span>${c.nombre} (${c.telefono})</span>
+                `;
+                container.appendChild(div);
+            });
+
+            document.getElementById('anuncioForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const mensaje = document.getElementById('mensajeAnuncio').value;
+                const checkboxes = document.querySelectorAll('input[name="cliente"]:checked');
+                const ids = Array.from(checkboxes).map(cb => cb.value);
+
+                if (ids.length === 0) return alert('Selecciona al menos un destinatario');
+
+                const btn = document.getElementById('sendBtn');
+                btn.disabled = true;
+                btn.textContent = 'Enviando...';
+
+                await fetch('http://localhost:3000/api/anuncios/enviar', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ mensaje, contactos_ids: ids })
+                });
+
+                alert('Anuncio enviado exitosamente');
+                location.reload();
+            });
+        });
+    </script>
+</body>
+
+</html>

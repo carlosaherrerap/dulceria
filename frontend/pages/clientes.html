@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clientes - Pastelería Renzos</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Renzos 🍰</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">🏠 Dashboard</a></li>
+                <li><a href="productos.html">📦 Productos</a></li>
+                <li><a href="reservas.html">🗓️ Reservas</a></li>
+                <li><a href="clientes.html" class="active">👥 Clientes</a></li>
+                <li><a href="preguntas.html">❓ FAQ/Reclamos</a></li>
+                <li><a href="sugerencias.html">💡 Sugerencias</a></li>
+                <li><a href="anuncios.html">📢 Anuncios</a></li>
+                <li class="logout-item"><a href="#" id="logoutBtn">🚪 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <header class="content-header">
+                <h1>Base de Clientes</h1>
+                <button class="btn-primary" id="openModalBtn">+ Nuevo Cliente</button>
+            </header>
+
+            <div class="table-container">
+                <table id="clientesTable">
+                    <thead>
+                        <tr>
+                            <th>Código / DNI</th>
+                            <th>Nombre</th>
+                            <th>Teléfono</th>
+                            <th>Email</th>
+                            <th>Fecha Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nuevo Cliente -->
+    <div class="modal-overlay" id="clienteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Añadir Nuevo Cliente</h2>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="clienteForm">
+                <div class="input-group">
+                    <label>Código / DNI (Obligatorio)</label>
+                    <input type="text" id="codigo" placeholder="ej: 75747335" required>
+                </div>
+                <div class="input-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="nombre" placeholder="ej: Carlos Herrera" required>
+                </div>
+                <div class="input-group">
+                    <label>Teléfono (WhatsApp)</label>
+                    <input type="text" id="telefono" placeholder="ej: 900124654">
+                </div>
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="ej: carlos@email.com">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '../index.html';
+
+        const modal = document.getElementById('clienteModal');
+        const openBtn = document.getElementById('openModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const clienteForm = document.getElementById('clienteForm');
+
+        openBtn.onclick = () => modal.style.display = 'flex';
+        closeBtn.onclick = () => modal.style.display = 'none';
+        cancelBtn.onclick = () => modal.style.display = 'none';
+
+        async function loadClientes() {
+            const response = await fetch('http://localhost:3000/api/clientes', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const clientes = await response.json();
+
+            const tbody = document.querySelector('#clientesTable tbody');
+            tbody.innerHTML = '';
+            clientes.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${c.codigo || '-'}</strong></td>
+                    <td>${c.nombre}</td>
+                    <td>${c.telefono || '-'}</td>
+                    <td>${c.email || '-'}</td>
+                    <td>${new Date(c.creado_en).toLocaleDateString()}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        clienteForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                codigo: document.getElementById('codigo').value,
+                nombre: document.getElementById('nombre').value,
+                telefono: document.getElementById('telefono').value,
+                email: document.getElementById('email').value
+            };
+
+            const res = await fetch('http://localhost:3000/api/clientes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                modal.style.display = 'none';
+                clienteForm.reset();
+                loadClientes();
+            } else {
+                alert('Error al guardar el cliente');
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', loadClientes);
+    </script>
+</body>
+
+</html>

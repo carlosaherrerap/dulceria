@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ & Reclamos - Pastelería Renzos</title>
+    <link rel="stylesheet" href="../assets/style.css">
+</head>
+
+<body>
+    <div class="dashboard-layout">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Renzos 🍰</h2>
+            </div>
+            <ul class="nav-links">
+                <li><a href="dashboard.html">🏠 Dashboard</a></li>
+                <li><a href="productos.html">📦 Productos</a></li>
+                <li><a href="reservas.html">🗓️ Reservas</a></li>
+                <li><a href="clientes.html">👥 Clientes</a></li>
+                <li><a href="preguntas.html" class="active">❓ FAQ/Reclamos</a></li>
+                <li><a href="sugerencias.html">💡 Sugerencias</a></li>
+                <li><a href="anuncios.html">📢 Anuncios</a></li>
+                <li class="logout-item"><a href="#" id="logoutBtn">🚪 Cerrar Sesión</a></li>
+            </ul>
+        </nav>
+        <main class="content">
+            <header class="content-header">
+                <h1>Preguntas Frecuentes Bot</h1>
+                <button class="btn-primary" id="openModalBtn">+ Nueva FAQ</button>
+            </header>
+
+            <div class="table-container">
+                <table id="faqTable">
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Pregunta/Palabras Clave</th>
+                            <th>Respuesta Bot</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Nueva FAQ -->
+    <div class="modal-overlay" id="faqModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Añadir Nueva FAQ</h2>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <form id="faqForm">
+                <div class="input-group">
+                    <label>Categoría</label>
+                    <input type="text" id="categoria" placeholder="ej: horario, pago, reclamos" required>
+                </div>
+                <div class="input-group">
+                    <label>Pregunta (Frase típica)</label>
+                    <input type="text" id="pregunta" placeholder="¿Cómo puedo comprar?" required>
+                </div>
+                <div class="input-group">
+                    <label>Palabras Clave (Comas)</label>
+                    <input type="text" id="palabras_clave" placeholder="comprar, proceso, guia">
+                </div>
+                <div class="input-group">
+                    <label>Respuesta del Bot</label>
+                    <textarea id="respuesta" rows="4" placeholder="Escribe aquí la respuesta automática..."
+                        required></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn-primary">Guardar FAQ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="../assets/app.js"></script>
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = '../index.html';
+
+        const modal = document.getElementById('faqModal');
+        const openBtn = document.getElementById('openModalBtn');
+        const closeBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const faqForm = document.getElementById('faqForm');
+
+        // Abrir/Cerrar Modal
+        openBtn.onclick = () => modal.style.display = 'flex';
+        closeBtn.onclick = () => modal.style.display = 'none';
+        cancelBtn.onclick = () => modal.style.display = 'none';
+        window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; };
+
+        // Cargar FAQs
+        async function loadFAQs() {
+            const response = await fetch('http://localhost:3000/api/preguntas', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const faqs = await response.json();
+
+            const tbody = document.querySelector('#faqTable tbody');
+            tbody.innerHTML = '';
+            faqs.forEach(f => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${f.categoria}</td>
+                    <td><strong>${f.pregunta}</strong><br><small>${f.palabras_clave || ''}</small></td>
+                    <td>${f.respuesta.substring(0, 50)}...</td>
+                    <td><button class="btn-delete" onclick="deleteFAQ('${f.id}')">🗑️</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Guardar FAQ
+        faqForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const data = {
+                categoria: document.getElementById('categoria').value,
+                pregunta: document.getElementById('pregunta').value,
+                palabras_clave: document.getElementById('palabras_clave').value,
+                respuesta: document.getElementById('respuesta').value
+            };
+
+            const res = await fetch('http://localhost:3000/api/preguntas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                modal.style.display = 'none';
+                faqForm.reset();
+                loadFAQs();
+            } else {
+                alert('Error al guardar la FAQ');
+            }
+        };
+
+        async function deleteFAQ(id) {
+            if (!confirm('¿Estás seguro de eliminar esta FAQ?')) return;
+            const res = await fetch(`http://localhost:3000/api/preguntas/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) loadFAQs();
+        }
+
+        document.addEventListener('DOMContentLoaded', loadFAQs);
+    </script>
+</body>
+
+</html>

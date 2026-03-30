@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: dulceria-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: dulceria_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+
+  backend:
+    build: ./backend
+    container_name: dulceria-backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_HOST=db
+      - DB_NAME=dulceria_db
+      - DB_PORT=5432
+      - DEEPSEEK_API_KEY=sk-b29b8740e5bf4859a6c6734faac45dd0
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./backend/auth_info_baileys:/app/auth_info_baileys
+      - ./contexto_bot:/app/contexto_bot
+      - ./contexto_sistema:/app/contexto_sistema
+
+volumes:
+  postgres_data:
+  whatsapp_auth:

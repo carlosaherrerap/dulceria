@@ -1,0 +1,101 @@
+BOT: ¡Hola! 😃  
+Soy *Renzo* 👋, tu asistente virtual 🤖 
+BOT:
+Escribe el número de la opción o cuéntame brevemente qué necesitas. 🚀
+1️⃣ *Sugerencias* 
+2️⃣ *Reserva* 
+3️⃣ *Compra al instante* 
+4️⃣ *Promociones & descuentos* 
+5️⃣ *Estado de mi pedido*  
+6️⃣ *Reclamos*  
+
+CLIENTE:2
+
+BOT:¡Genial! Vamos a crear tu reserva paso a paso 🎉  
+
+BOT: *1️⃣ Ocasión*  (<--Para este caso el bot está guardando las preferencias del cliente segun la ocasion para luego darle de recomendacion a otros clientes que esten en una ocasion/evento/celebracion similar)
+¿Esta compra es para algún evento (cumpleaños, aniversario, etc.)?  
+Responde *Sí* o *No*.   (Si es sí, me contarás un poco más después).
+
+CLIENTE:si, de hecho quiero una torta 3 leches(<--- en este caso el cliente no dice la ocasion, solo quiere ser directo)
+
+BOT:¡Excelente! 🎉 Vamos a concretar los detalles de tu torta 3 leches.
+
+BOT:*🧁 Tamaño / Peso*(<---aqui el bot ya detecto el tipo de producto, categoria y hace preguntas segun la propiedad con la que se vende, en este caso el la torta 2 leches es un tipo de keke, y los kekes se venden por kg y sobretodo en pesos de 1kg, 2kg o 5kg)
+¿Qué peso prefieres para la torta?  
+1️⃣ 1 kg  
+2️⃣ 2 kg  
+3️⃣ 5 kg  
+
+BOt: Una vez que tengamos el peso, pasaremos a la fecha y hora de recojo. 🚚
+
+CLIENTE:quiero de 5kilos cuanto cuesta
+
+BOT:¡Perfecto! 🎂
+
+`Torta 3 leches – 5 kg
+💲 S/ 210.00 (incluye caja y entrega en la pastelería)`
+
+BOT:
+*Próximo paso*  
+1️⃣ **Fecha y hora de recojo**  
+2️⃣ **Número de contacto** (opcional, para enviarte la confirmación vía SMS/WhatsApp)  
+3️⃣ **¿Quieres alguna decoración o mensaje especial?** (opcional)
+
+👉 Si prefieres entrega a domicilio, avísame y te pediré la dirección. 😊
+
+CLIENTE:para mañana a las 5pm voy a recogerlo, solo es o sin decoracion
+
+BOT:✅ *Reserva confirmada*  
+- *Producto:* Torta 3 leches ↗ 5 kg  
+- *Decoración:* Sin decoración (si deseas agregar alguna, avísame y te indico el costo extra)  
+- *Recojo:* Mañana a **17:00 hrs** en la pastelería  
+
+BOT:📝 **Para completar la reserva necesito:**
+
+1️⃣ *Nombres*(opcional)
+2️⃣ *Número de DNI*  <--obligatorio
+3️⃣ *Teléfono (WhatsApp/SMS)* <--preferible para recibir ofertas y descuentos y ganar puntos
+
+BOT:Una vez recibido, generaré tu ticket y te enviaré los datos de pago (YAPE). ¡Gracias por elegir Pastelería Renzos! 🎂✨
+
+**NOTA:Si el cliente quiere agregar algo más-->"CLIENTE:Quiero que el keke tenga una decorazion de Dragon ball Z" <--entonces se edita la plantilla con el producto actualizado y se pide confirmacion del cliente-->{Ahora tu producto es: ..... cantidad: .... para la fecha y hora:....., tus nombre, dni y telefono es: ..,...,... Estás conforme?}
+
+CLIENTE:
+Carlos alberto herrera palma
+75747335
+900124654
+
+**NOTA:Hasta aquí la plantilla queda así-->
+{
+  "id_reserva": "RZ-20260305-001",
+  "cliente": "Carlos Alberto Herrera Palma",
+  "dni": "75747335",
+  "teléfono": "900124654",
+  "producto": "Torta 3 leches",
+  "peso": "5 kg",
+  "decoración": "Sin decoración",
+  "fecha_recojo": "2026‑03‑06",
+  "hora_recojo": "17:00",
+  "precio_total_S/": 210.00,<---recordar que el precio se obtiene de la base de datos
+  "estado": "RECIBIDO"
+} <--- esta ficha se guarda internamente en la base de datos, no se le debe enviar por nada en el mundo al cliente
+
+BOT:
+🟢 Próximo paso: Pago
+
+- Método: YAPE
+- Número de YAPE: 987 654 321
+- Monto: S/ 210.00
+
+BOT:
+1️⃣ Enviar comprobante de pago
+2️⃣ Editar pedido
+
+
+BOT:👉 Envíame el comprobante de pago  y, en cuanto lo verifiquemos, el estado pasará a “Procesando” y recibirás notificaciones del avance (recibido, preparando, listo para recoger, etc.).
+
+
+CLIENTE: [Image_comprobante] <---aquí el cliente debe enviar la captura de su pago, y automaticamente el bot debe conectarse con yape para verificar si llegó el pago
+
+BOT:[Audio agradeciendo la preferencia del cliente]

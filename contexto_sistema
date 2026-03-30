@@ -1,0 +1,38 @@
+{
+    "function BOT"={
+        "hacer una reserva": "toma los datos del cliente: nombres, numero de documento, direccion(solo si se le va a hacer una entrega via Delivery),orden/producto, cantidad, fecha y hora de recojo, numero de telefono(SMS,whatsapp)",
+        "mandar notificaciones": {
+            "seguimiento de pedido": [
+                "Procesando",
+                "En consulta",
+                "Pedido en cola",
+                "preparando/cocinando",
+                "80%",
+                "Listo para recoger",'ENTREGADO','CORRIGIENDO','NO SE ENTREGO'
+            ],
+            "ofertas": [x+"% de descuento para los clientes mas fieles",
+                "si compras 5 tortas te llevas 1 alfajor de regalo",
+                "etc"
+            ]
+        },
+        "verificar  pago": "Integracion con yape para validar un pago",
+        "Atender reclamos": "Recurrir a la base de preguntas-respuestas frecuentes y encontrar una respuesta para la consulta/reclamo del cliente, sino derivar con un empleado/trabajador",
+        "atender al cliente": "mostrar precios/productos si lo pide, mostrar opciones de consulta/reserva/compra cuando sea necesario/oportuno, hacer calculos del total a pagar",
+        "leer audios": "cuando el cliente envíe audios el bot lo debe transcribir para poder leer el mensaje y automaticamente responder al cliente",
+        "leer imagenes": "según la fase del flujo de la conversacion con el cliente el bot puede comparar la imagen con las que se tiene en la base de datos de imagenes y si se está en una fase en la que el cliente quiere saber precio adjuntando una imagen entonces se le da solo informacion relacionada si se encuentra un producto similar a la imagen en un 95%, pero si no pasa ese porcentaje entonces se le envía imagens similares con precios e informacion. Si se está en otra fase apegarse al contexto que está más abajo para saber que responder",
+        "concretar un plan": "para casos especificos como cuando ya se ha reservado un producto o cuando ya pagó o cuando ya recogió su producto,etc. Para esos casos el bot debe tener una variable en .ENV si esa variable está en TRUE entonces solo para esos casos el BOT debe responder con audio, si está en FALSE entonces solo enviar texto"
+    },
+    "function HUMANO"={
+        "visualizar reservas": "mover estados del proceso de una reserva-->'RECIBIDO','EJECUTANDO','80%','TERMINADO','ENTREGADO,'MODIFICANDO' ",
+        "crud en portal": {
+            "crear anuncios/ofertas": "En base a plantillas o nuevas publicaciones/anuncions-->'Tenemos un descuento de 10% para ti', 'El día de hoy no habrá atención', 'etc' ",
+            "enviar anuncio a un publico objetivo": "Selecciona un anuncion creado y filtrar por la lista de contactos",
+            "agregar contactos": "de manera manual en un modal o cargar base de contactos para agregar a la base de datos y luego el bot pueda enviarle notificaciones"
+        }
+    },
+    "function BACKEND"={
+        "imprimir reserva": "Apenas se detecte una nueva reserva que genera el bot y se guarda en la base de datos entonces mandar a imprimir y guardar el estado para evitar volver a imprimir",
+        "notificacion": "obtener todos los estados en tiempo real y notificar a tiempo"
+    },
+    "CONTEXTO_DEL_BOT"={}
+}
